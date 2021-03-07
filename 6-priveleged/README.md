@@ -2,6 +2,10 @@ Run a container with privileged mode:
 ```
 docker run -ti --privileged --name myprivileged ubuntu:18.04 bash
 ls -la /dev/
+
+mkdir /mnt/tmp
+mkdir mount -t tmpfs none /mnt/tmp/
+df -h
 ```
 
 Verify:
