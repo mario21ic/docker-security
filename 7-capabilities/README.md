@@ -47,3 +47,5 @@ https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabi
 
 Example with Linux Driver please follow the repo
 https://github.com/mario21ic/linux-kernel-module-demo
+
+More info about Linux capabilities https://github.com/torvalds/linux/blob/124ea650d3072b005457faed69909221c2905a1f/include/uapi/linux/capability.h
