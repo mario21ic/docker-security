@@ -1,0 +1,46 @@
+{
+  "defaultAction": "SCMP_ACT_ERRNO",
+  "architectures": [
+    "SCMP_ARCH_X86_64",
+    "SCMP_ARCH_AARCH64"
+  ],
+  "syscalls": [
+    {
+      "names": [
+        "access",
+        "arch_prctl",
+        "brk",
+        "capset",
+        "close",
+        "execve",
+        "exit_group",
+        "exit_group",
+        "fstat",
+        "getdents64",
+        "ioctl",
+        "munmap",
+        "openat",
+        "prctl",
+        "prLimit64",
+        "pread64",
+        "prLimit64",
+        "read",
+        "rt_sigaction",
+        "rt_sigprocmask",
+        "select",
+        "set_robust_list",
+        "set_tid_address",
+        "setresgid",
+        "setresuid",
+        "stat",
+        "statfs",
+        "write"
+      ],
+      "action": "SCMP_ACT_ALLOW",
+      "args": [],
+      "comment": "",
+      "includes": {},
+      "excludes": {}
+    }
+  ]
+}
