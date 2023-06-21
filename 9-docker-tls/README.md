@@ -1,3 +1,5 @@
+Create a certificate:
+```
 $ openssl genrsa -aes256 -out ca-key.pem 4096
 Enter PEM pass phrase: # at least 4 characters
 
@@ -28,9 +30,10 @@ $ openssl req -subj "/CN=servidor" -sha256 -new -key server-key.pem -out server.
 $ echo subjectAltName = DNS:servidor,IP:192.168.1.2,IP:127.0.0.1 >> extfile.cnf
 $ echo extendedKeyUsage = serverAuth >> extfile.cnf
 $ openssl x509 -req -days 365 -sha256 -in server.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out server-cert.pem -extfile extfile.cnf
-
+```
 
 Client:
+```
 $ openssl genrsa -out key.pem 4096
 $ openssl req -subj '/CN=client' -new -key key.pem -out client.csr
 $ echo extendedKeyUsage = clientAuth > extfile-client.cnf
@@ -42,8 +45,10 @@ $ rm -v client.csr server.csr extfile.cnf extfile-client.cnf
 # Set permissions
 $ chmod -v 0400 ca-key.pem key.pem server-key.pem
 $ chmod -v 0444 ca.pem server-cert.pem cert.pem
+```
 
 # Server
+```
 $ dockerd \
     --tlsverify \
     --tlscacert=ca.pem \
@@ -52,8 +57,10 @@ $ dockerd \
     -H=0.0.0.0:2376
 $ sudo vim /lib/systemd/system/docker.service
 ExecStart=/usr/bin/dockerd --containerd=/run/containerd/containerd.sock --tlsverify --tlscacert=/etc/docker/ca.pem --tlscert=/etc/docker/server-cert.pem --tlskey=/etc/docker/server-key.pem -H=127.0.0.1:2376
+```
 
 # Testing
+```
 $ docker --tlsverify \
     --tlscacert=ca.pem \
     --tlscert=cert.pem \
@@ -63,5 +70,6 @@ $ docker --tlsverify \
 $ mkdir -pv ~/.docker
 $ cp -v {ca,cert,key}.pem ~/.docker
 $ export DOCKER_HOST=tcp://127.0.0.1:2376 DOCKER_TLS_VERIFY=1
+```
 
 Based on https://docs.docker.com/engine/security/protect-access/#use-tls-https-to-protect-the-docker-daemon-socket
