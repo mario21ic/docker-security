@@ -1,5 +1,6 @@
 Create a certificate:
 ```
+$ mkdir -p /etc/docker/tls/server && cd /etc/docker/tls/server
 $ openssl genrsa -aes256 -out ca-key.pem 4096
 Enter PEM pass phrase: # at least 4 characters
 
@@ -34,21 +35,23 @@ $ openssl x509 -req -days 365 -sha256 -in server.csr -CA ca.pem -CAkey ca-key.pe
 
 Client:
 ```
+$ mkdir -p /etc/docker/tls/client && cd /etc/docker/tls/client
 $ openssl genrsa -out key.pem 4096
 $ openssl req -subj '/CN=client' -new -key key.pem -out client.csr
 $ echo extendedKeyUsage = clientAuth > extfile-client.cnf
-$ openssl x509 -req -days 365 -sha256 -in client.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out cert.pem -extfile extfile-client.cnf
+$ openssl x509 -req -days 365 -sha256 -in client.csr -CA ../server/ca.pem -CAkey ../server/ca-key.pem -CAcreateserial -out cert.pem -extfile extfile-client.cnf
 
 # Optional
 $ rm -v client.csr server.csr extfile.cnf extfile-client.cnf
 
 # Set permissions
-$ chmod -v 0400 ca-key.pem key.pem server-key.pem
-$ chmod -v 0444 ca.pem server-cert.pem cert.pem
+$ chmod -v 0400 ../server/ca-key.pem key.pem ../server/server-key.pem
+$ chmod -v 0444 ../server/ca.pem ../server/server-cert.pem cert.pem
 ```
 
 # Server
 ```
+$ cd /etc/docker/tls/server
 $ dockerd \
     --tlsverify \
     --tlscacert=ca.pem \
@@ -56,20 +59,25 @@ $ dockerd \
     --tlskey=server-key.pem \
     -H=0.0.0.0:2376
 $ sudo vim /lib/systemd/system/docker.service
-ExecStart=/usr/bin/dockerd --containerd=/run/containerd/containerd.sock --tlsverify --tlscacert=/etc/docker/ca.pem --tlscert=/etc/docker/server-cert.pem --tlskey=/etc/docker/server-key.pem -H=127.0.0.1:2376
+$ sudo systemctl edit docker.service
+ExecStart=/usr/bin/dockerd --containerd=/run/containerd/containerd.sock --tlsverify --tlscacert=/etc/docker/tls/server/ca.pem --tlscert=/etc/docker/tls/server/server-cert.pem --tlskey=/etc/docker/tls/server/server-key.pem -H=127.0.0.1:2376
 ```
 
 # Testing
 ```
+$ cd client
 $ docker --tlsverify \
-    --tlscacert=ca.pem \
+    --tlscacert=../server/ca.pem \
     --tlscert=cert.pem \
     --tlskey=key.pem \
-    -H=127.0.0.1:2376 version
+    -H=127.0.0.1:2376 ps -a
 
 $ mkdir -pv ~/.docker
-$ cp -v {ca,cert,key}.pem ~/.docker
+$ cp -v ca.pem ~/.docker
+$ cp -v {cert,key}.pem ~/.docker
+$ sudo chown ubuntu:ubuntu -R /home/ubuntu/.docker/
 $ export DOCKER_HOST=tcp://127.0.0.1:2376 DOCKER_TLS_VERIFY=1
+$ docker ps -a
 ```
 
 Based on https://docs.docker.com/engine/security/protect-access/#use-tls-https-to-protect-the-docker-daemon-socket
