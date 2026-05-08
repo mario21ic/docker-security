@@ -20,4 +20,6 @@ sudo su -c "chmod 0600 /root/secrets.txt"
 $ docker run --rm -v /root/secrets.txt:/tmp/secrets.txt alpine cat /tmp/secrets.txt
 ```
 
+Nota: no funciona en Proxmox LXC unprivileged debido al tema de uids
+
 More info https://docs.docker.com/engine/security/userns-remap/
